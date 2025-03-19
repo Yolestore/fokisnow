@@ -14,7 +14,7 @@ export default function PhotoGallery() {
   if (isLoading) {
     return (
       <section className="my-12">
-        <h2 className="text-3xl font-bold mb-8">Photos that Speak</h2>
+        <h2 className="text-3xl font-bold mb-8">Galri Foto</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
             <Skeleton key={i} className="aspect-square" />
@@ -27,9 +27,9 @@ export default function PhotoGallery() {
   return (
     <section className="my-12">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold">Photos that Speak</h2>
+        <h2 className="text-3xl font-bold">Galri Foto</h2>
         <Link href="/gallery" className="flex items-center text-[#D0A64B] hover:underline">
-          See all photos 
+          Wè tout foto yo
           <ArrowRight className="ml-1 h-4 w-4" />
         </Link>
       </div>

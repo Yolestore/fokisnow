@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PodcastSection() {
   const [playing, setPlaying] = useState<number | null>(null);
-  
+
   const { data: podcasts, isLoading } = useQuery<Media[]>({
     queryKey: ['/api/media'],
     select: (data) => data.filter(m => m.type === 'podcast').slice(0, 3)
@@ -61,7 +61,7 @@ export default function PodcastSection() {
                   <h3 className="font-semibold truncate">{podcast.description}</h3>
                   <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-[#D0A64B] rounded-full"
+                      className="h-full bg-[#D0A64B] rounded-full transition-all duration-300"
                       style={{ width: playing === podcast.id ? '60%' : '0%' }}
                     />
                   </div>

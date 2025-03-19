@@ -11,7 +11,7 @@ export default function HeroSection() {
     queryKey: ['/api/posts'],
   });
 
-  const featuredPost = posts?.[0];
+  const featuredPost = posts?.length ? posts[0] : null;
 
   if (isLoading) {
     return (
@@ -53,7 +53,7 @@ export default function HeroSection() {
                     variant="secondary" 
                     className="group"
                   >
-                    Read More 
+                    Li Plis
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
