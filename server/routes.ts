@@ -1,31 +1,37 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertPostSchema, insertCommentSchema, insertMediaSchema } from "@shared/schema";
+import { insertUserSchema, insertPostSchema, insertCommentSchema, insertMediaSchema, users } from "@shared/schema";
 import { setupAuth } from "./auth";
-import { createClient } from '@supabase/supabase-js'
-
+import { db } from "./db";
+import * as jwt from 'jsonwebtoken';
+import { eq } from 'drizzle-orm';
 
 // Middleware to check if user is admin
 const isAdmin = async (req: any, res: any, next: any) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
+      console.log('No authorization header found');
       return res.status(401).json({ message: "Token pa jwenn" });
     }
 
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fokis-secret-key') as { userId: number };
+    console.log('Decoded token:', decoded);
 
     const [user] = await db.select().from(users).where(eq(users.id, decoded.userId));
-    
+    console.log('Found user:', user);
+
     if (!user?.isAdmin) {
+      console.log('User is not admin:', user);
       return res.status(403).json({ message: "Aksè entèdi" });
     }
 
     req.user = user;
     next();
   } catch (error) {
+    console.error('Admin middleware error:', error);
     return res.status(401).json({ message: "Non otorize" });
   }
 };
@@ -37,10 +43,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Posts
   app.get("/api/posts", async (req, res) => {
     try {
+      console.log('Getting posts, category:', req.query.category);
       const { category } = req.query;
       const posts = await storage.getPosts(category as string | undefined);
+      console.log('Found posts:', posts);
       res.json(posts);
     } catch (error: any) {
+      console.error('Error getting posts:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -53,16 +62,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(post);
     } catch (error: any) {
+      console.error('Error getting post:', error);
       res.status(500).json({ message: error.message });
     }
   });
 
   app.post("/api/posts", isAdmin, async (req, res) => {
     try {
+      console.log('Creating post with data:', req.body);
       const postData = insertPostSchema.parse(req.body);
       const post = await storage.createPost(postData);
+      console.log('Created post:', post);
       res.json(post);
     } catch (error: any) {
+      console.error('Error creating post:', error);
       res.status(400).json({ message: error.message });
     }
   });
@@ -75,6 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(post);
     } catch (error: any) {
+      console.error('Error updating post:', error);
       res.status(400).json({ message: error.message });
     }
   });
@@ -87,6 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: "Atik efase avèk siksè" });
     } catch (error: any) {
+      console.error('Error deleting post:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -97,6 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const comments = await storage.getComments(parseInt(req.params.postId));
       res.json(comments);
     } catch (error: any) {
+      console.error('Error getting comments:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -107,6 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const comment = await storage.createComment(commentData);
       res.json(comment);
     } catch (error: any) {
+      console.error('Error creating comment:', error);
       res.status(400).json({ message: error.message });
     }
   });
@@ -119,6 +136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(comment);
     } catch (error: any) {
+      console.error('Error approving comment:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -131,6 +149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: "Kòmantè efase avèk siksè" });
     } catch (error: any) {
+      console.error('Error deleting comment:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -142,6 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const media = await storage.getMedia(category as string | undefined);
       res.json(media);
     } catch (error: any) {
+      console.error('Error getting media:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -152,6 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const media = await storage.createMedia(mediaData);
       res.json(media);
     } catch (error: any) {
+      console.error('Error creating media:', error);
       res.status(400).json({ message: error.message });
     }
   });
@@ -160,12 +181,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/newsletter/subscribe", async (req, res) => {
     try {
       const { email } = req.body;
-      
+
       // TODO: Add email to newsletter list
       // This is where you'd integrate with your email service
-      
+
       res.json({ success: true });
     } catch (error: any) {
+      console.error('Error subscribing to newsletter:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -179,6 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: "Medya efase avèk siksè" });
     } catch (error: any) {
+      console.error('Error deleting media:', error);
       res.status(500).json({ message: error.message });
     }
   });
