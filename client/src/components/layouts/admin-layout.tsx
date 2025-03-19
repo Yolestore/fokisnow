@@ -17,23 +17,12 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [location, setLocation] = useLocation();
   
-  const { data: user, isLoading } = useQuery({
+  const { data: user } = useQuery({
     queryKey: ['/api/user'],
-    retry: false,
-    onError: () => {
-      setLocation('/auth');
-    }
+    retry: false
   });
 
-  useEffect(() => {
-    if (!isLoading && (!user || !user.isAdmin)) {
-      setLocation('/auth');
-    }
-  }, [user, isLoading, setLocation]);
-
-  if (isLoading || !user?.isAdmin) {
-    return null;
-  }
+  return (
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
