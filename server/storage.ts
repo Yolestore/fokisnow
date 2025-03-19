@@ -11,6 +11,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserLastLogin(id: number): Promise<User | undefined>;
 
   // Posts
   getPost(id: number): Promise<Post | undefined>;
@@ -52,6 +53,9 @@ export class MemStorage implements IStorage {
     const defaultAdmin: InsertUser = {
       username: "admin",
       password: "admin123", // This should be changed in production
+      email: "admin@fokis.com",
+      twoFactorEnabled: false,
+      isAdmin: true
     };
     const admin = await this.createUser(defaultAdmin);
     // Update admin flag
@@ -72,9 +76,26 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentIds.users++;
-    const user: User = { ...insertUser, id, isAdmin: false };
+    const now = new Date();
+    const user: User = {
+      ...insertUser,
+      id,
+      isAdmin: false,
+      createdAt: now,
+      lastLogin: null,
+      twoFactorEnabled: false
+    };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUserLastLogin(id: number): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+
+    const updatedUser = { ...user, lastLogin: new Date() };
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
 
   // Posts
@@ -91,11 +112,18 @@ export class MemStorage implements IStorage {
 
   async createPost(insertPost: InsertPost): Promise<Post> {
     const id = this.currentIds.posts++;
+    const now = new Date();
     const post: Post = { 
       ...insertPost, 
       id, 
       published: true,
-      views: 0
+      views: 0,
+      createdAt: now,
+      updatedAt: null,
+      type: 'article',
+      keywords: [],
+      seoTitle: null,
+      seoDescription: null
     };
     this.posts.set(id, post);
     return post;
@@ -105,7 +133,11 @@ export class MemStorage implements IStorage {
     const post = this.posts.get(id);
     if (!post) return undefined;
 
-    const updatedPost = { ...post, ...postUpdate };
+    const updatedPost = { 
+      ...post, 
+      ...postUpdate,
+      updatedAt: new Date()
+    };
     this.posts.set(id, updatedPost);
     return updatedPost;
   }
@@ -122,7 +154,14 @@ export class MemStorage implements IStorage {
 
   async createComment(insertComment: InsertComment): Promise<Comment> {
     const id = this.currentIds.comments++;
-    const comment: Comment = { ...insertComment, id, approved: false };
+    const now = new Date();
+    const comment: Comment = { 
+      ...insertComment, 
+      id, 
+      approved: false,
+      createdAt: now,
+      updatedAt: null
+    };
     this.comments.set(id, comment);
     return comment;
   }
@@ -131,7 +170,11 @@ export class MemStorage implements IStorage {
     const comment = this.comments.get(id);
     if (!comment) return undefined;
 
-    const updatedComment = { ...comment, approved: true };
+    const updatedComment = { 
+      ...comment, 
+      approved: true,
+      updatedAt: new Date()
+    };
     this.comments.set(id, updatedComment);
     return updatedComment;
   }
@@ -150,7 +193,12 @@ export class MemStorage implements IStorage {
 
   async createMedia(insertMedia: InsertMedia): Promise<Media> {
     const id = this.currentIds.media++;
-    const media: Media = { ...insertMedia, id };
+    const now = new Date();
+    const media: Media = { 
+      ...insertMedia, 
+      id,
+      createdAt: now
+    };
     this.media.set(id, media);
     return media;
   }
