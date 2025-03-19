@@ -8,24 +8,26 @@ import { createClient } from '@supabase/supabase-js'
 
 // Middleware to check if user is admin
 const isAdmin = async (req: any, res: any, next: any) => {
-  const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!)
-  const { data: { session }, error } = await supabase.auth.getSession();
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "Token pa jwenn" });
+    }
 
-  if (error || !session) {
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fokis-secret-key') as { userId: number };
+
+    const [user] = await db.select().from(users).where(eq(users.id, decoded.userId));
+    
+    if (!user?.isAdmin) {
+      return res.status(403).json({ message: "Aksè entèdi" });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
     return res.status(401).json({ message: "Non otorize" });
   }
-
-  const { data: user } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', session.user.email)
-    .single();
-
-  if (!user?.isAdmin) {
-    return res.status(403).json({ message: "Aksè entèdi" });
-  }
-
-  next();
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
