@@ -1,5 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export default function FeaturedCategories() {
   const categories = [
@@ -10,18 +11,25 @@ export default function FeaturedCategories() {
   ];
 
   return (
-    <section className="my-12">
-      <h2 className="text-3xl font-bold mb-8">Kategori Popilè</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {categories.map((cat) => (
-          <Card key={cat.title} className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="text-4xl mb-3">{cat.icon}</div>
-              <h3 className="font-semibold mb-1">{cat.title}</h3>
-              <p className="text-sm text-muted-foreground">{cat.count} atik</p>
-            </CardContent>
-          </Card>
-        ))}
+    <section className="py-16">
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-2xl font-medium mb-8 text-center">Kategori</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {categories.map((cat) => (
+            <Card 
+              key={cat.title} 
+              className="border-none shadow-none hover:bg-accent/50 transition-colors cursor-pointer"
+            >
+              <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
+                <span className="text-3xl">{cat.icon}</span>
+                <div className="text-center">
+                  <h3 className="font-medium text-sm">{cat.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{cat.count} atik</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </section>
   );
