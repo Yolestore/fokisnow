@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Post } from "@shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +10,8 @@ export default function LatestArticles() {
   const { data: posts, isLoading } = useQuery<Post[]>({
     queryKey: ['/api/posts'],
   });
+
+  console.log("Posts from API:", posts); // Debug log
 
   if (isLoading) {
     return (
@@ -30,10 +32,19 @@ export default function LatestArticles() {
     );
   }
 
-  const categories = [...new Set(posts?.map(post => post.category) || [])];
+  if (!posts?.length) {
+    return (
+      <section className="my-12">
+        <h2 className="text-3xl font-bold mb-8">Dènye Atik Yo</h2>
+        <p className="text-muted-foreground text-center">Pa gen atik pou moman an.</p>
+      </section>
+    );
+  }
+
+  const categories = [...new Set(posts.map(post => post.category))];
 
   return (
-    <section className="my-12">
+    <section className="my-12 container mx-auto px-4">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold">Dènye Atik Yo</h2>
         <div className="h-[2px] flex-1 mx-6 bg-[#D0A64B] opacity-20" />
@@ -41,9 +52,13 @@ export default function LatestArticles() {
 
       {categories.map(category => (
         <div key={category} className="mb-12">
-          <h3 className="text-2xl font-semibold mb-6 capitalize">{category}</h3>
+          <h3 className="text-2xl font-semibold mb-6 capitalize flex items-center">
+            <span className="w-2 h-2 bg-[#D0A64B] rounded-full mr-3" />
+            {category}
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts?.filter(post => post.category === category)
+            {posts
+              .filter(post => post.category === category)
               .slice(0, 3)
               .map((post) => (
                 <Card key={post.id} className="group hover:shadow-lg transition-shadow">
@@ -60,10 +75,10 @@ export default function LatestArticles() {
                         </div>
                       </div>
                     )}
-                    <h3 className="text-xl font-semibold mb-2 line-clamp-2">
+                    <h3 className="text-xl font-semibold mb-2 line-clamp-2 group-hover:text-[#D0A64B] transition-colors">
                       {post.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                       {post.content}
                     </p>
                     <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
@@ -77,7 +92,7 @@ export default function LatestArticles() {
                       </div>
                     </div>
                     <Link href={`/article/${post.id}`}>
-                      <Button variant="secondary" className="w-full">
+                      <Button variant="secondary" className="w-full bg-[#D0A64B] text-white hover:bg-[#B88F3D]">
                         Li Plis
                       </Button>
                     </Link>
