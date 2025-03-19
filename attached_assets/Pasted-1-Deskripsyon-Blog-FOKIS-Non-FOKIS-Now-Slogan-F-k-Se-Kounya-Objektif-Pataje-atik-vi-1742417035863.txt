@@ -1,0 +1,247 @@
+1. Deskripsyon Blog FOKIS
+Non : FOKIS Now
+Slogan : "Fòk Se Kounya."
+Objektif :
+•	Pataje atik, videyo (soti nan chèn YouTube ou), foto, ak debat sou sijè tankou sitiyasyon peyi (Ayiti), devlopman pèsonèl, analiz sosyal, espirityalite, ekonomi, ak entèlèk.
+•	Kreye yon kominote kote jèn kap reflechi, diskite, ak avanse ansanm fizikman, emosyonèlman, espirityèlman, ak entelektyèlman.
+Audyans Sib :
+•	Jèn ant 16-35 an ki enterese nan devlopman pèsonèl, deba sosyal, ak kilti.
+•	Moun k ap chèche resous pou angaje nan chanjman pozitif.
+________________________________________
+3.	Estrikti ak Devlopman Blog Lan
+Header Design Prompt
+1. Estrikti Header
+•	Logo : "FOKIS NOW" sou bò goch, avèk koulè #D0A64B (vèt dore) ak nwa, adapte pou dark/light mode.
+•	Menu :
+1.	Blog (Dropdown) :
+	Kategori Atik : Devlopman Pèsonèl, Sitiyasyon Peyi, Ekonomi, Espirityalite (style "Travel" nan egzanp lan).
+	"Best of the Week" (sidebar-like link).
+2.	Videyo (Dropdown) :
+	Kategori : Analiz, Entèvyou, Teyori (egzanp "Radio 101" ak "Podcast 460").
+3.	Foto (Dropdown) :
+	Kategori : Pwojè Kominotè, Manifestasyon, Pèsonalite (style "Seediposts →").
+4.	Kontakte Nou : Lyen direk pou paj kontak.
+•	Bouton Dwat (Nan fonksyon ak style "blog1.webp") :
+o	🔍 Search (bar rechèch ki depliyan sou klik).
+o	🌓 Dark/Light Mode Toggle (avèk animasyon switcher).
+o	👤 Login (Firebase Auth integration).
+________________________________________
+2. Guideline Design
+•	Koulè :
+o	Light Mode :
+	Background : Blan (#FFFFFF).
+	Tèks : Nwa (#1A1A1A).
+	Akcent : #D0A64B (pou bouton ak separator).
+o	Dark Mode :
+	Background : Nwa (#121212).
+	Tèks : Blan (#FFFFFF).
+	Akcent : #D0A64B (menm koulè).
+•	Font :
+o	Tit : Poppins SemiBold (pou "Blog", "Videyo", "Foto").
+o	Dropdown : Open Sans Regular.
+•	Ikon :
+o	Itilize ikon Font Awesome (🔍, 🌓, 👤) pou bouton.
+o	Separator : Yon ti liy verikal #D0A64B ant eleman menu.
+________________________________________
+3. Responsive Behavior
+•	Desktop : Menu an afiche anleng ak dropdown ki depliyan sou hover.
+•	Mobile :
+o	Menu a transfòme an "hamburger menu" (☰).
+o	Dropdown yo montre an modal ak yon animasyon "slide-down".
+o	Bouton Search/Login/Mode ap parèt anba meni hamburger la.
+
+Paj Prensipal Yo
+1. Palette Koulè
+•	Koulè Prensipal :
+o	Jon Lò (Gold) : #D0A64B (pou bouton, tit, akcent, separator).
+o	Nwa : #1A1A1A (tèks nan light mode).
+o	Blan : #FFFFFF (tèks nan dark mode ak fon light mode).
+o	Gri : #666666 (sou-tit ak metadata).
+•	Dark Mode :
+o	Fon : #121212, Tèks : Blan, Akcent : #D0A64B.
+________________________________________
+2. Deskripsyon Chak Seksyon
+A. Header (Menm jan ak prompt anvan men ak ajustman koulè)
+•	Logo : "FOKIS NOW" ak "FOK" an nwa ak "IS" an jon lò (#D0A64B).
+•	Menu : Kategori (Blog, Videyo, Foto) ak dropdown, separators ak jon lò.
+•	Bouton Dwat : 🔍 (search), 🌓 (dark/light), 👤 (login).
+B. Hero Section (Karousel)
+•	Background : Blan (light mode) / Nwa (dark mode).
+•	Eleman :
+o	Thumbnail ak tit an nwa/blan + bouton "Li Plis" an #D0A64B.
+o	Liy orizontal anba karousel la nan koulè jon lò.
+C. Dènye Atik (Style "Articles 4660")
+•	Tit Seksyon : "Dènye Atik" ak yon liy jon lò anba.
+•	Grid Atik :
+o	Thumbnail : 300x200px ak kategory an jon lò (egzanp: Voyaj).
+o	Bouton : "Komanse Deba" an nwa ak fon jon lò.
+D. Podcast/Radio (Style "Radio 101" ak "Podcast 460")
+•	Tit Seksyon : "Podcast FOKIS" ak ikon podcat jon lò.
+•	Epizòd :
+o	Thumbnail ak bouton "Koute" an #D0A64B.
+o	Bar pwogrè gri ak bar ki ranpli an jon lò.
+E. Galri Foto (Style "Seediposts →")
+•	Tit Seksyon : "Foto ki Pale" ak flèch jon lò.
+•	Masonry Grid :
+o	Foto ak overlay deskripsyon an nwa/blan ak transparans 80%, tit an jon lò.
+F. Membership CTA (Style "Become A BROADCAST MEMBER")
+•	Background : #D0A64B ak tèks blan.
+•	Bouton : "Enskri Kounye a" an nwa ak fon blan.
+G. Best of the Week (Style "Best of the week")
+•	Tit Seksyon : "Pi Popilè Semèn Nan" ak yon etwal jon lò.
+•	Lis Atik :
+o	Chak atik gen yon ti bar vètikal jon lò pou separasyon.
+H. Piblisite (Style "- ADS -")
+•	Boks ADS : Fon gri klè (#F5F5F5) ak tèks gri fonse, bouton "Sipòte" an #D0A64B.
+.
+1. Paj Kategori Atik/Videyo
+Egzanp URL : /kategori/[non-kategori] (egzanp: /kategori/devlopman)
+Deskripsyon :
+•	Header : Meni menm ak homepage, ak yon tit gwo ki montre kategori a (egzanp: "Devlopman Pèsonèl").
+•	Filtre :
+o	Dropdown pou "Triye pa" (resan, popilè, lekti pi kout).
+o	Chèjboks pou chèche nan kategori sa a.
+•	Grid Atik :
+o	Layout 3 kolòn (desktop) ak thumbnail, tit, rezime, ak bouton "Li Plis" an jon lò.
+o	Paginasyon anba a (egzanp: "1 2 3 ... 7").
+Entegrasyon Teknik :
+•	Firebase Firestore pou chaje atik yo pa kategori ak filtrage dinamik.
+•	Itilize querySnapshot.where("category", "==", "devlopman").
+________________________________________
+2. Paj Atik Endividyèl
+Egzanp URL : /atik/[id-atik]
+Deskripsyon :
+•	Header : Meni nòmal ak yon "breadcrumb" (egzanp: Blog > Devlopman > Tit Atik).
+•	Kò Atik :
+o	Thumbnail gwo (800x400px).
+o	Meta done (otè, dat, kategori ak badge jon lò).
+o	Kontni atik la ak tit souliye ak koulè #D0A64B.
+o	Seksyon "Pataje" ak bouton rezo sosyal.
+•	Seksyon Kòmantè :
+o	Fòm kòmantè (si itilizatè login).
+o	Lis kòmantè ak repons (style thread).
+Entegrasyon Teknik :
+•	Firebase Auth pou verifye si itilizatè a login anvan li poste kòmantè.
+•	Firestore pou sove/afiche kòmantè yo.
+________________________________________
+3. Paj Kontakte Nou
+Egzanp URL : /kontakte
+Deskripsyon :
+•	Fòm Kontak :
+o	Chanj yo (non, imèl, sijè, mesaj) ak validasyon HTML5.
+o	Bouton "Voye" ak background #D0A64B.
+•	Enfò Kontak :
+o	Adrès, telefòn, ak rezo sosyal (ikòn Facebook, Instagram, Twitter).
+o	Kat Google Maps entegre.
+Entegrasyon Teknik :
+•	Firebase Functions pou voye imèl ak Cloud Email API.
+•	Itilize fetch pou soumèt done nan Firebase.
+
+1.	Videyo :
+o	Lyen dirèk ak chèn YouTube ou (embed playlist oswa videyo resan).
+o	Seksyon "Videyo FOKIS" (analiz oswa montaj spesyal).
+2.	Galri Foto :
+o	Foto ki rakonte istwa (egzanp : aktivite kominotè, manifestasyon, pwojè lokal).
+o	Itilize yon galri modèn ak lightbox pou pi bon eksperyans.
+3.	Deba :
+o	Fowòm oswa seksyon kòmantè avèk sijè ouvè (egzanp : "Kijan nou ka amelyore edikasyon ann Ayiti?").
+o	Pèmèt itilizatè pwopoze sijè deba.
+4.	Kontak/Patisipe :
+o	Fòm pou kontakte ou, soumèt atik/ide, oswa vin yon kolaboratè.
+5.	About (FOK SE) :
+o	Eksplikasyon sou misyon blog la ak istwa kreyatè a (ou menm).
+________________________________________
+Paj Admin (Backend)
+•	Fonksyonalite :
+o	Ajoute/Modifye/Efface atik, videyo, ak foto.
+o	Jere deba (aprouve/elimine kòmantè).
+o	Anplwaye yon dashboard senp ak estatistik (egzanp : jan atik yo genyen plis vizit).
+o	Upload medya (foto, PDF, lyen videyo).
+•	Sekirite :
+o	Otantifikasyon de faz (2FA) pou login admin.
+o	Backup otomatik chak semèn.
+________________________________________
+Fonksyonalite Avanse
+•	SEO : Meta-tags, atik optimize ak mo kle.
+•	Abònman : Newsletter pou itilizatè yo ka resevo atik nouvo.
+•	Entegrasyon Rezo Sosyal : Pataje dirèk atik/videyo sou Facebook, Twitter, Instagram.
+________________________________________
+Dark/Light Mode 
+3. Backend ak supabase
+Enstalasyon
+•	Database :supabase pou:
+o	Koleksyon posts (atik, videyo, podcast).
+o	Koleksyon users (moun ki enskri, admin).
+o	Koleksyon comments (kòmantè ak ID itilizatè).
+•	Otantifikasyon : supabase Auth pou login/admin ak enskripsyon.
+•	Storage : Firebase Storage pou foto/videyo.
+Fonksyonalite Backend
+•	Admin Panel :
+o	Ajoute/Modifye atik ak medya (CRUD operations).
+o	Jere kòmantè (aprouve/suprime).
+o	Dashboard ak estatistik (egzanp: "Articles 4660").
+•	Sekirite :
+o	Règ pou limite aksè admin.
+o	Validation done ak sanitization.
+________________________________________
+Entèfas Admin FOKIS ak Supabase
+1. Objektif
+•	Pèmèt admin yo :
+o	Ajoute/Modifye/Efface atik, videyo, ak foto.
+o	Jere kòmantè (aprouve/suprime).
+o	Wè estatistik senp (vizit, popilarite atik).
+o	Upload medya (foto, fichye odyo).
+________________________________________
+2. Estrikti Entèfas Admin
+A. Login Screen
+•	Design :
+o	Fondal nwa (#121212) ak logo FOKIS NOW anlè.
+o	Fòm otantifikasyon (imèl/password) ak bouton "Login" an #D0A64B.
+o	Lyen "Reset Password" an gri.
+•	Teknoloji : Supabase Auth (Limitè pou imèl admin ou a).
+B. Dashboard
+•	Estatistik rapid :
+o	Boks ak chif (egzanp: "Atik Aktif: 25", "Kòmantè Anrejistre: 140").
+o	Grafik senp (liy oswa bar) pou vizit chak jou (itilize Chart.js).
+•	Aksè rapid :
+o	Bouton "Nouvo Atik", "Galri Foto", "Kòmantè", ak "Ekspòte Done".
+C. Jèstyon Atik
+•	Lis Atik :
+o	Tablo ak kolòn (Tit, Kategori, Dat, Aktif/Pasif).
+o	Bouton "Edit" ak "Delete" anba chak atik.
+o	Bar rechèch pou chèche pa tit/kategori.
+•	Ajoute Atik :
+o	Fòm ak chanj (Tit, Kategori, Kontni, Thumbnail).
+o	Editè tèks senp (egzanp: Quill.js) ak previzualizasyon.
+D. Jèstyon Kòmantè
+•	Lis Kòmantè :
+o	Afiche non itilizatè, kontni, ak dat.
+o	Checkbox pou aprouve/suprime plizyè kòmantè ansanm.
+o	Filtre pa "Pa Aprouve" oswa "Tout".
+E. Galri Medya
+•	Upload Medya :
+o	Zòn pou glise-depoze (drag and drop) pou foto/odyo.
+o	Preview imaj ak opsyon "ajoute deskripsyon".
+•	Lis Medya :
+o	Grid foto/thumbnail fichye ak bouton "Kopye URL" ak "Delete".
+________________________________________
+3. Guideline Design
+•	Palèt Koulè :
+o	Nwa : #121212 (fon).
+o	Jon lò : #D0A64B (bouton/akcent).
+o	Blan : #FFFFFF (tèks).
+o	Gri : #666666 (bordi/separator).
+•	Font :
+o	Tit : Poppins Medium (16px).
+o	Kò : Open Sans (14px).
+•	Ikon : Ikon Font Awesome (edit, delete, upload).
+________________________________________
+4. Entegrasyon Teknik
+Supabase
+•	Baz Done :
+o	Tab posts (id, title, content, category, date, active).
+o	Tab comments (id, post_id, user_id, content, approved, date).
+o	Tab media (id, url, description, date).
+•	Otantifikasyon : Supabase Auth pou login ak jere aksè admin.
+•	Storage : Supabase Storage pou medya (foto, odyo).
+SQL Reket
