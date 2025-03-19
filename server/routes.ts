@@ -154,6 +154,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Newsletter
+  app.post("/api/newsletter/subscribe", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      // TODO: Add email to newsletter list
+      // This is where you'd integrate with your email service
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+
   app.delete("/api/media/:id", isAdmin, async (req, res) => {
     try {
       const success = await storage.deleteMedia(parseInt(req.params.id));
