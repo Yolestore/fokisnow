@@ -1,143 +1,121 @@
 import { Express } from "express";
-import { supabase } from './client';
-import { User as SelectUser } from "@shared/schema";
+import { db } from "./db";
+import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { hash, compare } from "bcrypt";
+import { sign, verify } from "jsonwebtoken";
 
-declare global {
-  namespace Express {
-    interface User extends SelectUser {}
-  }
-}
+const JWT_SECRET = process.env.JWT_SECRET || 'fokis-secret-key';
 
 export function setupAuth(app: Express) {
-  // Authentication routes
+  // Registration endpoint
   app.post("/api/register", async (req, res) => {
     try {
-      // First create auth user in Supabase
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: req.body.email,
-        password: req.body.password,
-      });
+      const { username, email, password } = req.body;
 
-      if (signUpError) {
-        return res.status(400).json({ message: signUpError.message });
+      // Check if user already exists
+      const existingUser = await db.select().from(users).where(eq(users.email, email));
+      if (existingUser.length > 0) {
+        return res.status(400).json({ message: "Itilizatè sa deja egziste" });
       }
 
-      // Then create user in our users table
-      const { data: user, error: createError } = await supabase
-        .from('users')
-        .insert([{
-          username: req.body.username,
-          email: req.body.email,
-          password: req.body.password, // We'll store this to use with local auth too
-          isAdmin: false,
-          twoFactorEnabled: false
-        }])
-        .select()
-        .single();
+      // Hash password
+      const hashedPassword = await hash(password, 10);
 
-      if (createError) {
-        return res.status(400).json({ message: createError.message });
-      }
+      // Create user
+      const [newUser] = await db.insert(users).values({
+        username,
+        email,
+        password: hashedPassword,
+        isAdmin: false,
+        twoFactorEnabled: false,
+      }).returning();
 
-      res.status(201).json(user);
+      // Generate JWT token
+      const token = sign({ userId: newUser.id }, JWT_SECRET);
+
+      res.status(201).json({ user: newUser, token });
     } catch (error: any) {
+      console.error('Registration error:', error);
       res.status(500).json({ message: error.message });
     }
   });
 
+  // Login endpoint
   app.post("/api/login", async (req, res) => {
     try {
-      // First try Supabase auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: req.body.email,
-        password: req.body.password,
-      });
+      const { email, password } = req.body;
 
-      if (authError) {
-        // If Supabase auth fails, try local auth
-        const { data: users, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', req.body.email)
-          .eq('password', req.body.password)
-          .single();
+      // Find user
+      const [user] = await db.select().from(users).where(eq(users.email, email));
 
-        if (userError || !users) {
-          return res.status(401).json({ message: "Echèk otantifikasyon" });
-        }
-
-        // Update last login
-        await supabase
-          .from('users')
-          .update({ lastLogin: new Date() })
-          .eq('id', users.id);
-
-        return res.json(users);
+      if (!user) {
+        return res.status(401).json({ message: "Imel oswa modpas pa kòrèk" });
       }
 
-      // Get user from our users table
-      const { data: user } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', req.body.email)
-        .single();
+      // Verify password
+      const isValid = await compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Imel oswa modpas pa kòrèk" });
+      }
 
       // Update last login
-      await supabase
-        .from('users')
-        .update({ lastLogin: new Date() })
-        .eq('email', req.body.email);
+      await db.update(users)
+        .set({ lastLogin: new Date() })
+        .where(eq(users.id, user.id));
 
-      res.json(user);
+      // Generate JWT token
+      const token = sign({ userId: user.id }, JWT_SECRET);
+
+      res.json({ user, token });
     } catch (error: any) {
+      console.error('Login error:', error);
       res.status(500).json({ message: error.message });
     }
   });
 
-  app.post("/api/logout", async (req, res) => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      return res.status(500).json({ message: error.message });
-    }
-    res.sendStatus(200);
-  });
-
+  // Get current user endpoint
   app.get("/api/user", async (req, res) => {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error || !session) {
-        return res.sendStatus(401);
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ message: "Token pa jwenn" });
       }
 
-      const { data: user } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', session.user.email)
-        .single();
+      const token = authHeader.split(' ')[1];
+      const decoded = verify(token, JWT_SECRET) as { userId: number };
+
+      const [user] = await db.select().from(users).where(eq(users.id, decoded.userId));
+      if (!user) {
+        return res.status(404).json({ message: "Itilizatè pa jwenn" });
+      }
 
       res.json(user);
     } catch (error: any) {
-      res.status(401).json({ message: error.message });
+      console.error('Get user error:', error);
+      res.status(401).json({ message: "Token envalid" });
     }
   });
 
-  // Admin-only middleware
+  // Logout endpoint
+  app.post("/api/logout", (req, res) => {
+    res.json({ message: "Dekonekte avèk siksè" });
+  });
+
+  // Admin-only middleware (retained as it's independent of the auth method)
   app.use("/api/admin/*", async (req, res, next) => {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error || !session) {
-        return res.status(401).json({ message: "Non otorize" });
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ message: "Token pa jwenn" });
       }
 
-      const { data: user } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', session.user.email)
-        .single();
+      const token = authHeader.split(' ')[1];
+      const decoded = verify(token, JWT_SECRET) as { userId: number };
 
-      if (!user?.isAdmin) {
+      const [user] = await db.select().from(users).where(eq(users.id, decoded.userId));
+
+      if (!user || !user.isAdmin) {
         return res.status(403).json({ message: "Aksè entèdi" });
       }
 
