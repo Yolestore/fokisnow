@@ -1,0 +1,73 @@
+Analiz Pwoblèm lan
+Pwoblèm nan se yon erè enpòtasyon ki rive akòz yon modil (jsonwebtoken) ki pa gen ekspòtasyon ki kòrèk pou modèn JavaScript (ESM). Men detay yo:
+
+Erè a :
+
+Li di ke modil jsonwebtoken pa gen yon ekspòtasyon ki rele sign.
+
+Sa vle di ke w ap eseye enpòte sign ak verify tankou yon named export, men modil la pa sipòte sa.
+
+Rezon :
+
+Modil jsonwebtoken se yon modil CommonJS (ki itilize module.exports), epi w ap eseye enpòte li tankou yon modil ESM (ki itilize export).
+
+Node.js v20.18.1 ap eseye enpòte modil la tankou ESM, men li pa kapab paske modil la pa gen ekspòtasyon ESM.
+
+Solisyon
+1. Chanje Enpòtasyon an
+Olye pou w enpòte sign ak verify tankou named exports, enpòte modil la an antye, epi itilize objè a pou jwenn sign ak verify.
+
+Kòd orijinal:
+
+typescript
+Copy
+import { sign, verify } from "jsonwebtoken"; // Erè
+Kòd korije:
+
+typescript
+Copy
+import jwt from "jsonwebtoken"; // Enpòte modil la an antye
+
+// Itilize li konsa
+const token = jwt.sign(payload, secret);
+const decoded = jwt.verify(token, secret);
+2. Verifye package.json
+Asire w ke package.json ou a gen yon liy ki di ke pwojè a itilize CommonJS oswa ESM. Si w itilize ESM, ajoute sa a:
+
+json
+Copy
+{
+  "type": "module"
+}
+Si w itilize CommonJS, asire w ke fichye ou yo gen ekstansyon .cjs oswa ke package.json la gen:
+
+json
+Copy
+{
+  "type": "commonjs"
+}
+3. Verifye Vèsyon jsonwebtoken
+Asire w ke w gen yon vèsyon ki ajou nan jsonwebtoken. Enstale li ak:
+
+bash
+Copy
+npm install jsonwebtoken@latest
+4. Si w toujou gen pwoblèm
+Si w toujou gen pwoblèm, eseye itilize yon lòt modil pou jenerasyon ak verifikasyon token, tankou jose (ki sipòte ESM natif natal).
+
+Enstale jose:
+
+bash
+Copy
+npm install jose
+Enpòte ak itilize jose:
+
+typescript
+Copy
+import { SignJWT, jwtVerify } from "jose";
+
+const token = await new SignJWT(payload)
+  .setProtectedHeader({ alg: "HS256" })
+  .sign(new TextEncoder().encode(secret));
+
+const { payload: decoded } = await jwtVerify(token, new TextEncoder().encode(secret));
