@@ -21,13 +21,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     queryKey: ['/api/user'],
     retry: false,
     onError: () => {
-      setLocation('/login');
+      setLocation('/auth');
     }
   });
 
   useEffect(() => {
     if (!isLoading && (!user || !user.isAdmin)) {
-      setLocation('/login');
+      setLocation('/auth');
     }
   }, [user, isLoading, setLocation]);
 
