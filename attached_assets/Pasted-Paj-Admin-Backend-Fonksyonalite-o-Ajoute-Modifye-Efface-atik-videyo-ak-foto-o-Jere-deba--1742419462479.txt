@@ -1,0 +1,94 @@
+Paj Admin (Backend)
+•	Fonksyonalite :
+o	Ajoute/Modifye/Efface atik, videyo, ak foto.
+o	Jere deba (aprouve/elimine kòmantè).
+o	Anplwaye yon dashboard senp ak estatistik (egzanp : jan atik yo genyen plis vizit).
+o	Upload medya (foto, PDF, lyen videyo).
+•	Sekirite :
+o	Otantifikasyon de faz (2FA) pou login admin.
+o	Backup otomatik chak semèn.
+________________________________________
+Fonksyonalite Avanse
+•	SEO : Meta-tags, atik optimize ak mo kle.
+•	Abònman : Newsletter pou itilizatè yo ka resevo atik nouvo.
+•	Entegrasyon Rezo Sosyal : Pataje dirèk atik/videyo sou Facebook, Twitter, Instagram.
+________________________________________
+Dark/Light Mode 
+3. Backend ak supabase
+Enstalasyon
+•	Database :supabase pou:
+o	Koleksyon posts (atik, videyo, podcast).
+o	Koleksyon users (moun ki enskri, admin).
+o	Koleksyon comments (kòmantè ak ID itilizatè).
+•	Otantifikasyon : supabase Auth pou login/admin ak enskripsyon.
+•	Storage : Firebase Storage pou foto/videyo.
+Fonksyonalite Backend
+•	Admin Panel :
+o	Ajoute/Modifye atik ak medya (CRUD operations).
+o	Jere kòmantè (aprouve/suprime).
+o	Dashboard ak estatistik (egzanp: "Articles 4660").
+•	Sekirite :
+o	Règ pou limite aksè admin.
+o	Validation done ak sanitization.
+________________________________________
+Entèfas Admin FOKIS ak Supabase
+1. Objektif
+•	Pèmèt admin yo :
+o	Ajoute/Modifye/Efface atik, videyo, ak foto.
+o	Jere kòmantè (aprouve/suprime).
+o	Wè estatistik senp (vizit, popilarite atik).
+o	Upload medya (foto, fichye odyo).
+________________________________________
+2. Estrikti Entèfas Admin
+A. Login Screen
+•	Design :
+o	Fondal nwa (#121212) ak logo FOKIS NOW anlè.
+o	Fòm otantifikasyon (imèl/password) ak bouton "Login" an #D0A64B.
+o	Lyen "Reset Password" an gri.
+•	Teknoloji : Supabase Auth (Limitè pou imèl admin ou a).
+B. Dashboard
+•	Estatistik rapid :
+o	Boks ak chif (egzanp: "Atik Aktif: 25", "Kòmantè Anrejistre: 140").
+o	Grafik senp (liy oswa bar) pou vizit chak jou (itilize Chart.js).
+•	Aksè rapid :
+o	Bouton "Nouvo Atik", "Galri Foto", "Kòmantè", ak "Ekspòte Done".
+C. Jèstyon Atik
+•	Lis Atik :
+o	Tablo ak kolòn (Tit, Kategori, Dat, Aktif/Pasif).
+o	Bouton "Edit" ak "Delete" anba chak atik.
+o	Bar rechèch pou chèche pa tit/kategori.
+•	Ajoute Atik :
+o	Fòm ak chanj (Tit, Kategori, Kontni, Thumbnail).
+o	Editè tèks senp (egzanp: Quill.js) ak previzualizasyon.
+D. Jèstyon Kòmantè
+•	Lis Kòmantè :
+o	Afiche non itilizatè, kontni, ak dat.
+o	Checkbox pou aprouve/suprime plizyè kòmantè ansanm.
+o	Filtre pa "Pa Aprouve" oswa "Tout".
+E. Galri Medya
+•	Upload Medya :
+o	Zòn pou glise-depoze (drag and drop) pou foto/odyo.
+o	Preview imaj ak opsyon "ajoute deskripsyon".
+•	Lis Medya :
+o	Grid foto/thumbnail fichye ak bouton "Kopye URL" ak "Delete".
+________________________________________
+3. Guideline Design
+•	Palèt Koulè :
+o	Nwa : #121212 (fon).
+o	Jon lò : #D0A64B (bouton/akcent).
+o	Blan : #FFFFFF (tèks).
+o	Gri : #666666 (bordi/separator).
+•	Font :
+o	Tit : Poppins Medium (16px).
+o	Kò : Open Sans (14px).
+•	Ikon : Ikon Font Awesome (edit, delete, upload).
+________________________________________
+4. Entegrasyon Teknik
+Supabase
+•	Baz Done :
+o	Tab posts (id, title, content, category, date, active).
+o	Tab comments (id, post_id, user_id, content, approved, date).
+o	Tab media (id, url, description, date).
+•	Otantifikasyon : Supabase Auth pou login ak jere aksè admin.
+•	Storage : Supabase Storage pou medya (foto, odyo).
+SQL Reket

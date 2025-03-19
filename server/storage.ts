@@ -11,20 +11,20 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Posts
   getPost(id: number): Promise<Post | undefined>;
   getPosts(category?: string): Promise<Post[]>;
   createPost(post: InsertPost): Promise<Post>;
   updatePost(id: number, post: Partial<Post>): Promise<Post | undefined>;
   deletePost(id: number): Promise<boolean>;
-  
+
   // Comments
   getComments(postId: number): Promise<Comment[]>;
   createComment(comment: InsertComment): Promise<Comment>;
   approveComment(id: number): Promise<Comment | undefined>;
   deleteComment(id: number): Promise<boolean>;
-  
+
   // Media
   getMedia(category?: string): Promise<Media[]>;
   createMedia(media: InsertMedia): Promise<Media>;
@@ -44,6 +44,19 @@ export class MemStorage implements IStorage {
     this.comments = new Map();
     this.media = new Map();
     this.currentIds = { users: 1, posts: 1, comments: 1, media: 1 };
+    // Create default admin user
+    this.createDefaultAdmin();
+  }
+
+  private async createDefaultAdmin() {
+    const defaultAdmin: InsertUser = {
+      username: "admin",
+      password: "admin123", // This should be changed in production
+    };
+    const admin = await this.createUser(defaultAdmin);
+    // Update admin flag
+    const updatedAdmin = { ...admin, isAdmin: true };
+    this.users.set(admin.id, updatedAdmin);
   }
 
   // Users
@@ -91,7 +104,7 @@ export class MemStorage implements IStorage {
   async updatePost(id: number, postUpdate: Partial<Post>): Promise<Post | undefined> {
     const post = this.posts.get(id);
     if (!post) return undefined;
-    
+
     const updatedPost = { ...post, ...postUpdate };
     this.posts.set(id, updatedPost);
     return updatedPost;
@@ -117,7 +130,7 @@ export class MemStorage implements IStorage {
   async approveComment(id: number): Promise<Comment | undefined> {
     const comment = this.comments.get(id);
     if (!comment) return undefined;
-    
+
     const updatedComment = { ...comment, approved: true };
     this.comments.set(id, updatedComment);
     return updatedComment;
