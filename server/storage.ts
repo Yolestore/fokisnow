@@ -1,9 +1,11 @@
+import { supabase } from './client';
 import { 
-  users, posts, comments, media,
+  users, posts, comments, media, categories,
   type User, type InsertUser,
   type Post, type InsertPost,
   type Comment, type InsertComment,
-  type Media, type InsertMedia
+  type Media, type InsertMedia,
+  type Category, type InsertCategory
 } from "@shared/schema";
 
 export interface IStorage {
@@ -32,180 +34,186 @@ export interface IStorage {
   deleteMedia(id: number): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private posts: Map<number, Post>;
-  private comments: Map<number, Comment>;
-  private media: Map<number, Media>;
-  private currentIds: { [key: string]: number };
-
-  constructor() {
-    this.users = new Map();
-    this.posts = new Map();
-    this.comments = new Map();
-    this.media = new Map();
-    this.currentIds = { users: 1, posts: 1, comments: 1, media: 1 };
-    // Create default admin user
-    this.createDefaultAdmin();
-  }
-
-  private async createDefaultAdmin() {
-    const defaultAdmin: InsertUser = {
-      username: "admin",
-      password: "admin123", // This should be changed in production
-      email: "admin@fokis.com",
-      twoFactorEnabled: false,
-      isAdmin: true
-    };
-    const admin = await this.createUser(defaultAdmin);
-    // Update admin flag
-    const updatedAdmin = { ...admin, isAdmin: true };
-    this.users.set(admin.id, updatedAdmin);
-  }
-
+export class SupabaseStorage implements IStorage {
   // Users
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) return undefined;
+    return data as User;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username
-    );
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (error || !data) return undefined;
+    return data as User;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentIds.users++;
-    const now = new Date();
-    const user: User = {
-      ...insertUser,
-      id,
-      isAdmin: false,
-      createdAt: now,
-      lastLogin: null,
-      twoFactorEnabled: false
-    };
-    this.users.set(id, user);
-    return user;
+    const { data, error } = await supabase
+      .from('users')
+      .insert([insertUser])
+      .select()
+      .single();
+
+    if (error || !data) throw new Error(error?.message || 'Failed to create user');
+    return data as User;
   }
 
   async updateUserLastLogin(id: number): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (!user) return undefined;
+    const { data, error } = await supabase
+      .from('users')
+      .update({ lastLogin: new Date() })
+      .eq('id', id)
+      .select()
+      .single();
 
-    const updatedUser = { ...user, lastLogin: new Date() };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    if (error || !data) return undefined;
+    return data as User;
   }
 
   // Posts
   async getPost(id: number): Promise<Post | undefined> {
-    return this.posts.get(id);
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) return undefined;
+    return data as Post;
   }
 
   async getPosts(category?: string): Promise<Post[]> {
-    const posts = Array.from(this.posts.values());
-    return category 
-      ? posts.filter(post => post.category === category)
-      : posts;
+    let query = supabase.from('posts').select('*');
+
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw new Error(error.message);
+    return (data || []) as Post[];
   }
 
-  async createPost(insertPost: InsertPost): Promise<Post> {
-    const id = this.currentIds.posts++;
-    const now = new Date();
-    const post: Post = { 
-      ...insertPost, 
-      id, 
-      published: true,
-      views: 0,
-      createdAt: now,
-      updatedAt: null,
-      type: 'article',
-      keywords: [],
-      seoTitle: null,
-      seoDescription: null
-    };
-    this.posts.set(id, post);
-    return post;
+  async createPost(post: InsertPost): Promise<Post> {
+    const { data, error } = await supabase
+      .from('posts')
+      .insert([post])
+      .select()
+      .single();
+
+    if (error || !data) throw new Error(error?.message || 'Failed to create post');
+    return data as Post;
   }
 
   async updatePost(id: number, postUpdate: Partial<Post>): Promise<Post | undefined> {
-    const post = this.posts.get(id);
-    if (!post) return undefined;
+    const { data, error } = await supabase
+      .from('posts')
+      .update({ ...postUpdate, updatedAt: new Date() })
+      .eq('id', id)
+      .select()
+      .single();
 
-    const updatedPost = { 
-      ...post, 
-      ...postUpdate,
-      updatedAt: new Date()
-    };
-    this.posts.set(id, updatedPost);
-    return updatedPost;
+    if (error || !data) return undefined;
+    return data as Post;
   }
 
   async deletePost(id: number): Promise<boolean> {
-    return this.posts.delete(id);
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', id);
+
+    return !error;
   }
 
   // Comments
   async getComments(postId: number): Promise<Comment[]> {
-    return Array.from(this.comments.values())
-      .filter(comment => comment.postId === postId);
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('postId', postId);
+
+    if (error) throw new Error(error.message);
+    return (data || []) as Comment[];
   }
 
-  async createComment(insertComment: InsertComment): Promise<Comment> {
-    const id = this.currentIds.comments++;
-    const now = new Date();
-    const comment: Comment = { 
-      ...insertComment, 
-      id, 
-      approved: false,
-      createdAt: now,
-      updatedAt: null
-    };
-    this.comments.set(id, comment);
-    return comment;
+  async createComment(comment: InsertComment): Promise<Comment> {
+    const { data, error } = await supabase
+      .from('comments')
+      .insert([comment])
+      .select()
+      .single();
+
+    if (error || !data) throw new Error(error?.message || 'Failed to create comment');
+    return data as Comment;
   }
 
   async approveComment(id: number): Promise<Comment | undefined> {
-    const comment = this.comments.get(id);
-    if (!comment) return undefined;
+    const { data, error } = await supabase
+      .from('comments')
+      .update({ approved: true, updatedAt: new Date() })
+      .eq('id', id)
+      .select()
+      .single();
 
-    const updatedComment = { 
-      ...comment, 
-      approved: true,
-      updatedAt: new Date()
-    };
-    this.comments.set(id, updatedComment);
-    return updatedComment;
+    if (error || !data) return undefined;
+    return data as Comment;
   }
 
   async deleteComment(id: number): Promise<boolean> {
-    return this.comments.delete(id);
+    const { error } = await supabase
+      .from('comments')
+      .delete()
+      .eq('id', id);
+
+    return !error;
   }
 
   // Media
   async getMedia(category?: string): Promise<Media[]> {
-    const media = Array.from(this.media.values());
-    return category
-      ? media.filter(m => m.category === category)
-      : media;
+    let query = supabase.from('media').select('*');
+
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw new Error(error.message);
+    return (data || []) as Media[];
   }
 
-  async createMedia(insertMedia: InsertMedia): Promise<Media> {
-    const id = this.currentIds.media++;
-    const now = new Date();
-    const media: Media = { 
-      ...insertMedia, 
-      id,
-      createdAt: now
-    };
-    this.media.set(id, media);
-    return media;
+  async createMedia(media: InsertMedia): Promise<Media> {
+    const { data, error } = await supabase
+      .from('media')
+      .insert([media])
+      .select()
+      .single();
+
+    if (error || !data) throw new Error(error?.message || 'Failed to create media');
+    return data as Media;
   }
 
   async deleteMedia(id: number): Promise<boolean> {
-    return this.media.delete(id);
+    const { error } = await supabase
+      .from('media')
+      .delete()
+      .eq('id', id);
+
+    return !error;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new SupabaseStorage();

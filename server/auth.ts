@@ -1,10 +1,5 @@
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
-import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
-import { storage } from "./storage";
+import { supabase } from './client';
 import { User as SelectUser } from "@shared/schema";
 
 declare global {
@@ -13,123 +8,120 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
-
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
-}
-
-async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
-}
-
 export function setupAuth(app: Express) {
-  const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || 'fokis-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-  };
-
-  app.set("trust proxy", 1);
-  app.use(session(sessionSettings));
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  passport.use(
-    new LocalStrategy(async (
-      username: string, 
-      password: string, 
-      done: (error: any, user?: SelectUser | false, info?: { message: string }) => void
-    ) => {
-      try {
-        const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
-          return done(null, false, { message: 'Invalid username or password' });
-        }
-        // Update last login timestamp
-        await storage.updateUserLastLogin(user.id);
-        return done(null, user);
-      } catch (error) {
-        return done(error);
-      }
-    }),
-  );
-
-  passport.serializeUser((user: Express.User, done: (err: any, id: number) => void) => {
-    done(null, user.id);
-  });
-
-  passport.deserializeUser(async (id: number, done: (err: any, user?: Express.User) => void) => {
-    try {
-      const user = await storage.getUser(id);
-      done(null, user);
-    } catch (error) {
-      done(error);
-    }
-  });
-
   // Authentication routes
-  app.post("/api/register", async (req, res, next) => {
+  app.post("/api/register", async (req, res) => {
     try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Non itilizatè sa deja egziste" });
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: req.body.email,
+        password: req.body.password,
+        options: {
+          data: {
+            username: req.body.username,
+            isAdmin: false,
+            twoFactorEnabled: false
+          }
+        }
+      });
+
+      if (signUpError) {
+        return res.status(400).json({ message: signUpError.message });
       }
 
-      const hashedPassword = await hashPassword(req.body.password);
-      const user = await storage.createUser({
-        ...req.body,
-        password: hashedPassword,
-      });
+      // Create user in our users table
+      const { data: user, error: createError } = await supabase
+        .from('users')
+        .insert([{
+          username: req.body.username,
+          email: req.body.email,
+          isAdmin: false,
+          twoFactorEnabled: false
+        }])
+        .select()
+        .single();
 
-      req.login(user, (err) => {
-        if (err) return next(err);
-        res.status(201).json(user);
-      });
-    } catch (error) {
-      next(error);
+      if (createError) {
+        return res.status(400).json({ message: createError.message });
+      }
+
+      res.status(201).json(user);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err: any, user: Express.User | false, info: { message: string } | undefined) => {
-      if (err) return next(err);
-      if (!user) {
-        return res.status(401).json({ message: info?.message || "Echèk otantifikasyon" });
-      }
-      req.login(user, (err) => {
-        if (err) return next(err);
-        res.json(user);
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: req.body.email,
+        password: req.body.password,
       });
-    })(req, res, next);
+
+      if (error) {
+        return res.status(401).json({ message: "Echèk otantifikasyon" });
+      }
+
+      // Get user from our users table
+      const { data: user } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', req.body.email)
+        .single();
+
+      // Update last login
+      await supabase
+        .from('users')
+        .update({ lastLogin: new Date() })
+        .eq('email', req.body.email);
+
+      res.json(user);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
   });
 
-  app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
-    });
+  app.post("/api/logout", async (req, res) => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      return res.status(500).json({ message: error.message });
+    }
+    res.sendStatus(200);
   });
 
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(req.user);
+  app.get("/api/user", async (req, res) => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error || !session) {
+      return res.sendStatus(401);
+    }
+
+    const { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', session.user.email)
+      .single();
+
+    res.json(user);
   });
 
   // Admin-only middleware
-  app.use("/api/admin/*", (req, res, next) => {
-    if (!req.isAuthenticated() || !req.user.isAdmin) {
+  app.use("/api/admin/*", async (req, res, next) => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error || !session) {
+      return res.status(401).json({ message: "Non otorize" });
+    }
+
+    const { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', session.user.email)
+      .single();
+
+    if (!user?.isAdmin) {
       return res.status(403).json({ message: "Aksè entèdi" });
     }
+
     next();
   });
 }
