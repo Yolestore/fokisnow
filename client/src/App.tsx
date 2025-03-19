@@ -7,6 +7,10 @@ import Home from "@/pages/home";
 import Article from "@/pages/article";
 import Auth from "@/pages/auth";
 import Gallery from "@/pages/gallery";
+import AdminDashboard from "@/pages/admin";
+import AdminPosts from "@/pages/admin/posts";
+import AdminMedia from "@/pages/admin/media";
+import AdminComments from "@/pages/admin/comments";
 import Header from "@/components/header";
 
 function Router() {
@@ -15,10 +19,19 @@ function Router() {
       <Header />
       <main>
         <Switch>
+          {/* Public Routes */}
           <Route path="/" component={Home} />
           <Route path="/article/:id" component={Article} />
           <Route path="/auth" component={Auth} />
           <Route path="/gallery" component={Gallery} />
+
+          {/* Admin Routes */}
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/posts" component={AdminPosts} />
+          <Route path="/admin/media" component={AdminMedia} />
+          <Route path="/admin/comments" component={AdminComments} />
+
+          {/* 404 Fallback */}
           <Route component={NotFound} />
         </Switch>
       </main>
