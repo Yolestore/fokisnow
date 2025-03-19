@@ -3,7 +3,8 @@ import { db } from "./db";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { hash, compare } from "bcrypt";
-import { sign, verify } from "jsonwebtoken";
+import jwt from "jsonwebtoken"; // Added import statement
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fokis-secret-key';
 
@@ -32,7 +33,7 @@ export function setupAuth(app: Express) {
       }).returning();
 
       // Generate JWT token
-      const token = sign({ userId: newUser.id }, JWT_SECRET);
+      const token = jwt.sign({ userId: newUser.id }, JWT_SECRET); // Using jwt.sign here as well for consistency
 
       res.status(201).json({ user: newUser, token });
     } catch (error: any) {
@@ -65,7 +66,7 @@ export function setupAuth(app: Express) {
         .where(eq(users.id, user.id));
 
       // Generate JWT token
-      const token = sign({ userId: user.id }, JWT_SECRET);
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET); // Using jwt.sign here as well for consistency
 
       res.json({ user, token });
     } catch (error: any) {
@@ -83,7 +84,7 @@ export function setupAuth(app: Express) {
       }
 
       const token = authHeader.split(' ')[1];
-      const decoded = verify(token, JWT_SECRET) as { userId: number };
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: number }; //Updated verification
 
       const [user] = await db.select().from(users).where(eq(users.id, decoded.userId));
       if (!user) {
@@ -111,7 +112,7 @@ export function setupAuth(app: Express) {
       }
 
       const token = authHeader.split(' ')[1];
-      const decoded = verify(token, JWT_SECRET) as { userId: number };
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: number }; //Updated verification
 
       const [user] = await db.select().from(users).where(eq(users.id, decoded.userId));
 
