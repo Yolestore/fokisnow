@@ -23,7 +23,7 @@ function Router() {
         </Switch>
       </main>
       <footer className="mt-20 py-8 text-center text-muted-foreground">
-        <p>© 2024 FOKIS NOW. All rights reserved.</p>
+        <p>© 2024 FOKIS NOW. Tous droits réservés.</p>
       </footer>
     </div>
   );
