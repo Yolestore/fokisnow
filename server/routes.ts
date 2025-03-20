@@ -6,6 +6,9 @@ import { setupAuth } from "./auth";
 import { db } from "./db";
 import * as jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
+import helmet from 'helmet';
+import path from 'path';
+import express from 'express';
 
 // Middleware to check if user is admin
 const isAdmin = async (req: any, res: any, next: any) => {
@@ -13,16 +16,32 @@ const isAdmin = async (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Sets up /api/register, /api/login, /api/logout, /api/user
+  // Setup security headers with YouTube allowed
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+        imgSrc: ["'self'", "data:", "https:", "http:"],
+        frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
+        connectSrc: ["'self'", "https:", "http:"],
+        fontSrc: ["'self'", "data:", "https:", "http:"],
+        mediaSrc: ["'self'", "https:", "http:"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: false,
+  }));
+
+  // API Routes
   setupAuth(app);
 
   // Posts
   app.get("/api/posts", async (req, res) => {
     try {
-      console.log('Getting posts, category:', req.query.category);
       const { category } = req.query;
       const posts = await storage.getPosts(category as string | undefined);
-      console.log('Found posts:', posts);
       res.json(posts);
     } catch (error: any) {
       console.error('Error getting posts:', error);
@@ -153,6 +172,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Media Interactions
+  app.get("/api/media/:id/likes", async (req, res) => {
+    try {
+      const count = await storage.getMediaLikes(parseInt(req.params.id));
+      res.json({ count });
+    } catch (error: any) {
+      console.error('Error getting media likes:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/media/:id/like", async (req, res) => {
+    try {
+      await storage.likeMedia(parseInt(req.params.id));
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Error liking media:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/media/:id/comments", async (req, res) => {
+    try {
+      const comments = await storage.getMediaComments(parseInt(req.params.id));
+      res.json(comments);
+    } catch (error: any) {
+      console.error('Error getting media comments:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/media/:id/comments", async (req, res) => {
+    try {
+      const comment = await storage.createMediaComment(parseInt(req.params.id), req.body.text);
+      res.json(comment);
+    } catch (error: any) {
+      console.error('Error creating media comment:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+
   // Newsletter
   app.post("/api/newsletter/subscribe", async (req, res) => {
     try {
@@ -168,7 +229,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
   app.delete("/api/media/:id", isAdmin, async (req, res) => {
     try {
       const success = await storage.deleteMedia(parseInt(req.params.id));
@@ -179,6 +239,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error deleting media:', error);
       res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Serve static files from the frontend build
+  app.use(express.static(path.join(process.cwd(), 'dist/public')));
+
+  // Catch-all route to serve index.html for client-side routing
+  app.get('*', (req, res) => {
+    // Only serve index.html for non-API routes
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(process.cwd(), 'dist/public/index.html'));
     }
   });
 

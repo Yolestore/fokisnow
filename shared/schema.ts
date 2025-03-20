@@ -51,6 +51,21 @@ export const media = pgTable("media", {
   uploadedById: integer("uploaded_by_id").references(() => users.id),
 });
 
+export const mediaLikes = pgTable("media_likes", {
+  id: serial("id").primaryKey(),
+  mediaId: integer("media_id").references(() => media.id),
+  userId: integer("user_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const mediaComments = pgTable("media_comments", {
+  id: serial("id").primaryKey(),
+  mediaId: integer("media_id").references(() => media.id),
+  userId: integer("user_id").references(() => users.id),
+  text: text("text").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
@@ -87,6 +102,16 @@ export const insertMediaSchema = createInsertSchema(media).omit({
   createdAt: true,
 });
 
+export const insertMediaLikeSchema = createInsertSchema(mediaLikes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMediaCommentSchema = createInsertSchema(mediaComments).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
   createdAt: true,
@@ -96,10 +121,14 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type InsertMedia = z.infer<typeof insertMediaSchema>;
+export type InsertMediaLike = z.infer<typeof insertMediaLikeSchema>;
+export type InsertMediaComment = z.infer<typeof insertMediaCommentSchema>;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 
 export type User = typeof users.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
 export type Media = typeof media.$inferSelect;
+export type MediaLike = typeof mediaLikes.$inferSelect;
+export type MediaComment = typeof mediaComments.$inferSelect;
 export type Category = typeof categories.$inferSelect;

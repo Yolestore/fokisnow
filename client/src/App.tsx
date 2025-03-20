@@ -11,6 +11,7 @@ import AdminDashboard from "@/pages/admin";
 import AdminPosts from "@/pages/admin/posts";
 import AdminMedia from "@/pages/admin/media";
 import AdminComments from "@/pages/admin/comments";
+import PostEditor from "@/pages/admin/post-editor";
 import Header from "@/components/header";
 
 function Router() {
@@ -28,6 +29,8 @@ function Router() {
           {/* Admin Routes */}
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/admin/posts" component={AdminPosts} />
+          <Route path="/admin/posts/new" component={PostEditor} />
+          <Route path="/admin/posts/:id" component={PostEditor} />
           <Route path="/admin/media" component={AdminMedia} />
           <Route path="/admin/comments" component={AdminComments} />
 

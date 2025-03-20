@@ -16,13 +16,11 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [location, setLocation] = useLocation();
-  
-  const { data: user } = useQuery({
+
+  const { data: user } = useQuery<User>({
     queryKey: ['/api/user'],
     retry: false
   });
-
-  return (
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
@@ -51,7 +49,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.href;
-            
+
             return (
               <Button
                 key={item.href}
@@ -70,7 +68,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             variant="ghost" 
             className="w-full justify-start text-destructive"
             onClick={() => {
-              // Handle logout
+              localStorage.removeItem('authToken');
               setLocation('/auth');
             }}
           >
@@ -81,7 +79,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* Mobile Header */}
-      <div className="md:hidden border-b">
+      <div className="md:hidden border-b sticky top-0 bg-background z-50">
         <div className="flex items-center justify-between p-4">
           <img
             src="/logo-light.svg"
@@ -93,23 +91,41 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             alt="FOKIS NOW Admin"
             className="h-8 hidden dark:block"
           />
-          
+
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
-              <div className="space-y-4 py-4">
+            <SheetContent side="left" className="w-64 p-0">
+              <div className="p-6 border-b">
+                <img
+                  src="/logo-light.svg"
+                  alt="FOKIS NOW Admin"
+                  className="h-8 dark:hidden"
+                />
+                <img
+                  src="/logo-dark.svg"
+                  alt="FOKIS NOW Admin"
+                  className="h-8 hidden dark:block"
+                />
+              </div>
+              <nav className="flex flex-col p-4">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
+                  const isActive = location === item.href;
                   return (
                     <Button
                       key={item.href}
-                      variant="ghost"
-                      className="w-full justify-start"
-                      onClick={() => setLocation(item.href)}
+                      variant={isActive ? "secondary" : "ghost"}
+                      className="w-full justify-start mb-2"
+                      onClick={() => {
+                        setLocation(item.href);
+                        // Close the sheet after navigation
+                        const closeButton = document.querySelector('[data-sheet-close]') as HTMLButtonElement;
+                        if (closeButton) closeButton.click();
+                      }}
                     >
                       <Icon className="mr-2 h-4 w-4" />
                       {item.label}
@@ -118,16 +134,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 })}
                 <Button 
                   variant="ghost" 
-                  className="w-full justify-start text-destructive"
+                  className="w-full justify-start text-destructive mt-4"
                   onClick={() => {
-                    // Handle logout
+                    localStorage.removeItem('authToken');
                     setLocation('/auth');
                   }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Button>
-              </div>
+              </nav>
             </SheetContent>
           </Sheet>
         </div>
